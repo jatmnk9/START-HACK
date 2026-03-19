@@ -17,7 +17,7 @@ type GameAction =
   | { type: 'COMPLETE_ONBOARDING' }
   | { type: 'SET_EVENT'; event: HistoricalEvent }
   | { type: 'SET_SURVIVAL_PHASE'; phase: GameState['survivalPhase'] }
-  | { type: 'BUY_ASSET'; asset: Asset; quantity: number }
+  | { type: 'BUY_ASSET'; asset: Asset; quantity: number; groupId?: string }
   | { type: 'SELL_ASSET'; assetId: string; quantity: number }
   | { type: 'APPLY_WAVE_IMPACT'; impacts: { assetId: string; percentChange: number }[] }
   | { type: 'ADD_XP'; amount: number }
@@ -91,7 +91,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (cost > state.player.balance) return state;
 
       const existingIdx = state.player.portfolio.findIndex(
-        (p) => p.asset.id === action.asset.id
+        (p) => p.asset.id === action.asset.id && p.groupId === action.groupId
       );
       let newPortfolio: PortfolioItem[];
       if (existingIdx >= 0) {
@@ -108,6 +108,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             quantity: action.quantity,
             purchasePrice: action.asset.price,
             holdWaves: 0,
+            groupId: action.groupId,
           },
         ];
       }

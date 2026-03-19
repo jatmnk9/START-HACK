@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useGame } from '../context/GameContext';
 import { HISTORICAL_EVENTS } from '../data/events';
 import { ASSETS } from '../data/assets';
@@ -9,7 +9,7 @@ import CityView from './ui/CityView';
 import NewsTicker from './ui/NewsTicker';
 import ContextPanel from './survival/ContextPanel';
 import RoulettePhase from './survival/RoulettePhase';
-import ImpactView from './survival/ImpactView';
+import BattleBoard from './survival/BattleBoard';
 import ResultView from './survival/ResultView';
 import './Survival.css';
 
@@ -17,34 +17,22 @@ export default function Survival() {
   const { state, dispatch } = useGame();
   const player = state.player!;
 
-  const [phase, setPhase] = useState<'roulette' | 'context' | 'market' | 'crypto_wildcard' | 'countdown' | 'impact' | 'result'>('roulette');
+  const [phase, setPhase] = useState<'roulette' | 'context' | 'market' | 'crypto_wildcard' | 'battle_board' | 'result'>('roulette');
   
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [investmentMode, setInvestmentMode] = useState<'ataque' | 'defensa' | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<HistoricalEvent>(HISTORICAL_EVENTS[0]);
-  const [countdown, setCountdown] = useState(5);
-  const [impactResults, setImpactResults] = useState<{ assetId: string; name: string; change: number; emoji: string }[]>([]);
   const [totalChange, setTotalChange] = useState(0);
   const [survived, setSurvived] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState('');
   const [buyQuantities, setBuyQuantities] = useState<Record<string, number>>({});
 
-  // Countdown timer
-  useEffect(() => {
-    if (phase !== 'countdown') return;
-    if (countdown <= 0) { resolveImpact(); return; }
-    const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
-    return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, countdown]);
-
-  const resolveImpact = useCallback(() => {
-    setPhase('impact');
+  // Battle completion handler (calculates financial results after tactical combat)
+  const handleBattleComplete = useCallback(() => {
     const results = player.portfolio.map((item) => {
       const impact = selectedEvent.impacts.find((i) => i.assetId === item.asset.id);
       return { assetId: item.asset.id, name: item.asset.name, change: impact ? impact.percentChange : 0, emoji: item.asset.buildingEmoji };
     });
-    setImpactResults(results);
 
     const valueBefore = player.portfolio.reduce((sum, item) => sum + item.asset.price * item.quantity, 0);
     let valueAfter = 0;
@@ -59,7 +47,6 @@ export default function Survival() {
     setTotalChange(pct);
     setSurvived(pct > -20);
 
-    // Feedback
     const gains = results.filter((r) => r.change > 0).map((r) => r.name);
     const losses = results.filter((r) => r.change < 0).map((r) => r.name);
     let fb = '';
@@ -72,16 +59,16 @@ export default function Survival() {
     setFeedbackMessage(fb);
 
     dispatch({ type: 'APPLY_WAVE_IMPACT', impacts: selectedEvent.impacts });
-    setTimeout(() => setPhase('result'), 4000);
+    setPhase('result');
   }, [player.portfolio, selectedEvent, dispatch]);
 
-  const handleBuy = (asset: Asset, qty: number) => {
+  const handleBuy = (asset: Asset, qty: number, groupId?: string) => {
     if (qty * asset.price > player.balance) return;
-    dispatch({ type: 'BUY_ASSET', asset, quantity: qty });
+    dispatch({ type: 'BUY_ASSET', asset, quantity: qty, groupId });
   };
 
   const updateQuantity = (assetId: string, qty: number) => {
-    setBuyQuantities((prev) => ({ ...prev, [assetId]: Math.max(1, qty) }));
+    setBuyQuantities((prev) => ({ ...prev, [assetId]: Math.max(0, qty) }));
   };
 
   const portfolioValue = player.portfolio.reduce((sum, item) => sum + item.asset.price * item.quantity, 0);
@@ -89,7 +76,6 @@ export default function Survival() {
   const handleBackToHub = () => dispatch({ type: 'SET_SCREEN', screen: 'hub' });
   const handlePlayAgain = () => {
     setPhase('roulette');
-    setCountdown(5);
     setBuyQuantities({});
     dispatch({ type: 'RESET_PORTFOLIO' });
   };
@@ -111,19 +97,12 @@ export default function Survival() {
     );
   }
 
-  // Impact: centered animation
-  if (phase === 'impact') {
+  // Battle Board (replaces countdown and impact phases)
+  if (phase === 'battle_board') {
     return (
-      <GameLayout className="survival-bg" weather={selectedEvent.weather}>
-        <NewsTicker headlines={selectedEvent.newsHeadlines} />
-        <CenterPanel className="sv-impact-center">
-          <ImpactView
-            eventName={selectedEvent.name}
-            weather={selectedEvent.weather}
-            results={impactResults}
-          />
-        </CenterPanel>
-      </GameLayout>
+      <div className="lol-fullscreen-bg">
+        <BattleBoard portfolio={player.portfolio} event={selectedEvent} onComplete={handleBattleComplete} />
+      </div>
     );
   }
 
@@ -148,33 +127,11 @@ export default function Survival() {
     );
   }
 
-  // Countdown: centered with portfolio summary
-  if (phase === 'countdown') {
-    return (
-      <GameLayout className="survival-bg" weather={selectedEvent.weather}>
-        <NewsTicker headlines={selectedEvent.newsHeadlines} />
-        <CenterPanel className="sv-countdown-center">
-          <h2>⏳ La Ola se Acerca...</h2>
-          <div className="sv-countdown-num">{countdown}</div>
-          <span className="sv-countdown-label">días para el impacto</span>
-          <div className="sv-countdown-summary">
-            <h4>Tu Portafolio Final:</h4>
-            {player.portfolio.map((item) => (
-              <div key={item.asset.id} className="sv-summary-item">
-                <span>{item.asset.buildingEmoji} {item.asset.name}</span>
-                <span>x{item.quantity} = CHF {(item.asset.price * item.quantity).toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
-        </CenterPanel>
-      </GameLayout>
-    );
-  }
 
   // LOL-Style Champion Select (Full Screen)
-  if (phase === 'market') {
+  if (phase === 'market' || phase === 'crypto_wildcard') {
     const renderChampSelect = () => {
-      if (!investmentMode) {
+      if (phase === 'market' && !investmentMode) {
         return (
           <div className="lol-mode-select">
             <h1 className="lol-title">ELIGE TU MODO DE INVERSIÓN</h1>
@@ -197,22 +154,28 @@ export default function Survival() {
         );
       }
 
-      // 3 companies based on mode
-      const availableAssets = ASSETS.filter(a => {
-        if (a.type === 'crypto') return false;
-        if (investmentMode === 'ataque') return a.type === 'stock' || a.type === 'commodity';
-        return a.type === 'etf' || a.type === 'bond';
-      }).slice(0, 3); // "solo pon tres empresas por ahora bien centrada"
+      let availableAssets = ASSETS;
+      if (phase === 'crypto_wildcard') {
+        availableAssets = ASSETS.filter(a => a.type === 'crypto');
+      } else {
+        availableAssets = ASSETS.filter(a => {
+          if (a.type === 'crypto') return false;
+          if (investmentMode === 'ataque') return a.type === 'stock' || a.type === 'commodity';
+          return a.type === 'stock'; 
+        }).slice(0, investmentMode === 'defensa' ? 5 : 3);
+      }
 
       return (
         <div className="lol-champ-select">
           <div className="lol-header">
             <div className="lol-header-left">
-               <button className="lol-back-btn" onClick={() => { setInvestmentMode(null); setSelectedAsset(null); }}>
-                 ← Volver a Modos
-               </button>
+               {phase === 'market' && (
+                 <button className="lol-back-btn" onClick={() => { setInvestmentMode(null); setSelectedAsset(null); }}>
+                   ← Volver a Modos
+                 </button>
+               )}
             </div>
-            <h2>DECLARA TU INVERSIÓN: {investmentMode === 'ataque' ? 'ATAQUE' : 'DEFENSA'}</h2>
+            <h2>{phase === 'crypto_wildcard' ? 'FASE COMODÍN: CRIPTO' : `DECLARA TU INVERSIÓN: ${investmentMode === 'ataque' ? 'ATAQUE' : 'DEFENSA'}`}</h2>
             <div className="lol-header-right">
                <div className="lol-timer">00</div>
             </div>
@@ -247,23 +210,47 @@ export default function Survival() {
                    <p className="lol-desc">{selectedAsset.description}</p>
                    <div className="lol-stats" style={{justifyContent: 'flex-start', marginBottom: '15px'}}>
                       <span>Precio: <strong style={{color:'#f9d423'}}>CHF {selectedAsset.price}</strong></span>
-                      <span>Efecto: <strong style={{color: investmentMode==='ataque' ? '#ff4e50' : '#64b5f6'}}>{investmentMode.toUpperCase()}</strong></span>
+                      <span>Efecto: <strong style={{color: investmentMode==='ataque' ? '#ff4e50' : '#64b5f6'}}>{(investmentMode || 'CRIPTO').toUpperCase()}</strong></span>
                    </div>
                    
                    <div className="lol-actions" style={{borderTop: 'none', paddingTop: 0}}>
                      <div className="lol-buy-row horizontal">
                        <div className="lol-qty-controls">
-                         <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, (buyQuantities[selectedAsset.id] || 1) - 1)}>-</button>
-                         <span className="lol-qty-val">{buyQuantities[selectedAsset.id] || 1}</span>
-                         <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, (buyQuantities[selectedAsset.id] || 1) + 1)}>+</button>
+                         <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, Math.max(1, (buyQuantities[selectedAsset.id] || 1) - 1))}>-</button>
+                         <span className="lol-qty-val">{Math.max(1, buyQuantities[selectedAsset.id] || 1)}</span>
+                         <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, Math.max(1, buyQuantities[selectedAsset.id] || 1) + 1)}>+</button>
                        </div>
-                       <button 
-                         className="lol-lock-btn"
-                         disabled={(buyQuantities[selectedAsset.id] || 1) * selectedAsset.price > player.balance}
-                         onClick={() => handleBuy(selectedAsset, buyQuantities[selectedAsset.id] || 1)}
-                       >
-                         FIJAR INVERSIÓN ({(buyQuantities[selectedAsset.id] || 1) * selectedAsset.price})
-                       </button>
+                       
+                       {investmentMode === 'defensa' && selectedAsset.type === 'stock' && (
+                         <div style={{marginLeft: '15px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                           <input type="checkbox" id="group-etf" defaultChecked={true} style={{width: '20px', height: '20px'}} />
+                           <label htmlFor="group-etf" style={{color: '#f9d423', fontSize: '0.9rem', cursor: 'pointer'}}>Agrupar en Fondo ETF</label>
+                         </div>
+                       )}
+
+                       {(() => {
+                         const isCrypto = selectedAsset.type === 'crypto';
+                         const currentCrypto = player.portfolio.find(p => p.asset.type === 'crypto');
+                         const hasCrypto = !!currentCrypto;
+                         const isThisCrypto = hasCrypto && currentCrypto.asset.id === selectedAsset.id;
+                         const isMaxQty = isCrypto && hasCrypto && !isThisCrypto;
+                         
+                         return (
+                           <button 
+                             className="lol-lock-btn"
+                             style={{marginLeft: 'auto'}}
+                             disabled={isMaxQty || Math.max(1, buyQuantities[selectedAsset.id] || 1) * selectedAsset.price > player.balance}
+                             onClick={() => {
+                               const checkbox = document.getElementById('group-etf') as HTMLInputElement;
+                               const grpId = checkbox && checkbox.checked ? 'fondo_defensivo' : undefined;
+                               handleBuy(selectedAsset, Math.max(1, buyQuantities[selectedAsset.id] || 1), grpId);
+                               setBuyQuantities({});
+                             }}
+                           >
+                             {isMaxQty ? 'MÁXIMO 1 CRIPTO' : `FIJAR INVERSIÓN (${Math.max(1, buyQuantities[selectedAsset.id] || 1) * selectedAsset.price})`}
+                           </button>
+                         )
+                       })()}
                      </div>
                      <span className="lol-balance" style={{marginTop: '10px'}}>Fondos Disponibles: CHF {player.balance}</span>
                    </div>
@@ -279,23 +266,63 @@ export default function Survival() {
           <div className="lol-bottom-deck">
              <div className="lol-deck-title">TU EQUIPO:</div>
              <div className="lol-deck-slots">
-                {player.portfolio.filter(p => p.asset.type !== 'crypto').map(item => (
-                  <div key={item.asset.id} className="lol-deck-slot filled">
-                    <span className="deck-icon">{item.asset.icon}</span>
-                    <span className="deck-qty">x{item.quantity}</span>
-                  </div>
-                ))}
-                {/* Pad empty slots up to 5 */}
-                {Array.from({ length: Math.max(0, 5 - player.portfolio.filter(p => p.asset.type !== 'crypto').length) }).map((_, i) => (
-                  <div key={`empty-${i}`} className="lol-deck-slot empty"></div>
-                ))}
+                 {(() => {
+                   const nonCryptoItems = player.portfolio.filter(p => p.asset.type !== 'crypto');
+                   const groupedItems = nonCryptoItems.filter(p => p.groupId === 'fondo_defensivo');
+                   const individualItems = nonCryptoItems.filter(p => p.groupId !== 'fondo_defensivo');
+
+                   const slots = [];
+
+                   individualItems.forEach(item => {
+                      slots.push(
+                        <div key={item.asset.id} className="lol-deck-slot filled">
+                          <span className="deck-icon">{item.asset.icon}</span>
+                          <span className="deck-qty">x{item.quantity}</span>
+                        </div>
+                      );
+                   });
+
+                   if (groupedItems.length > 0) {
+                      slots.push(
+                        <div key="etf-group" className="lol-deck-slot filled custom-fund" style={{width: 'auto', padding: '0 10px', flexDirection: 'column', justifyContent: 'center'}}>
+                           <div style={{display: 'flex', gap: '5px', marginBottom: '2px'}}>
+                             {groupedItems.map(item => (
+                               <span key={item.asset.id} style={{fontSize: '1.2rem'}} title={`${item.asset.name} x${item.quantity}`}>{item.asset.icon}</span>
+                             ))}
+                           </div>
+                           <span style={{fontSize: '0.65rem', fontWeight: 'bold', color: '#f9d423'}}>FONDO ETF</span>
+                        </div>
+                      );
+                   }
+
+                   const occupied = individualItems.length + (groupedItems.length > 0 ? 1 : 0);
+                   for (let i = 0; i < Math.max(0, 5 - occupied); i++) {
+                      slots.push(<div key={`empty-${i}`} className="lol-deck-slot empty"></div>);
+                   }
+
+                   return slots;
+                 })()}
+                 {/* Cryptos always render at the end separately */}
+                 {player.portfolio.filter(p => p.asset.type === 'crypto').map(item => (
+                   <div key={`crypto-${item.asset.id}`} className="lol-deck-slot filled crypto" style={{marginLeft: '20px', border: '1px solid #bc42f5'}}>
+                     <span className="deck-icon">{item.asset.icon}</span>
+                     <span className="deck-qty">x{item.quantity}</span>
+                   </div>
+                 ))}
              </div>
-             {player.portfolio.length > 0 && (
-               <button className="lol-confirm-btn" onClick={() => setPhase('crypto_wildcard')}>
-                 CONTINUAR FASE
-               </button>
-             )}
-          </div>
+              <div className="lol-deck-actions">
+               {phase === 'crypto_wildcard' ? (
+                 <>
+                   <button className="lol-back-btn" onClick={() => { setPhase('market'); setSelectedAsset(null); }}>← Volver</button>
+                   <button className="lol-confirm-btn final" onClick={() => { setPhase('battle_board'); }}>¡ENFRENTAR LA OLA!</button>
+                 </>
+               ) : (
+                 player.portfolio.length > 0 && (
+                   <button className="lol-confirm-btn" onClick={() => { setPhase('crypto_wildcard'); setSelectedAsset(null); }}>CONTINUAR FASE</button>
+                 )
+               )}
+              </div>
+           </div>
         </div>
       );
     };
@@ -307,86 +334,6 @@ export default function Survival() {
     );
   }
 
-  // Crypto Wildcard Phase (Full Screen)
-  if (phase === 'crypto_wildcard') {
-    const cryptoAssets = ASSETS.filter(a => a.type === 'crypto');
-    return (
-      <div className="lol-fullscreen-bg crypto-bg">
-        <div className="lol-champ-select wildcard">
-          <div className="lol-header">
-            <div className="lol-header-left"></div>
-            <h2>FASE COMODÍN: CRIPTO</h2>
-            <div className="lol-header-right">
-               <div className="lol-timer" style={{color: '#bc42f5', borderColor: '#bc42f5'}}>??</div>
-            </div>
-          </div>
-          <p className="lol-subtitle">
-            Criptomonedas: Altamente volátiles, sin relación con las empresas. ¿Deseas arriesgarte?
-          </p>
-          <div className="lol-main-area centered-cryptos">
-             <div className="lol-grid horizontal-grid">
-                {cryptoAssets.map(asset => (
-                  <div 
-                    key={asset.id} 
-                    className={`lol-champ-portrait wildcard ${selectedAsset?.id === asset.id ? 'selected' : ''}`}
-                    onClick={() => setSelectedAsset(asset)}
-                  >
-                    <div className="lol-champ-img">{asset.icon}</div>
-                    <div className="lol-champ-name">{asset.name}</div>
-                  </div>
-                ))}
-             </div>
-             {selectedAsset && selectedAsset.type === 'crypto' && (
-                <div className="lol-crypto-buy">
-                   <div className="lol-crypto-splash">
-                     <span className="lol-splash-icon">{selectedAsset.icon}</span>
-                     <h2>{selectedAsset.name}</h2>
-                   </div>
-                   <p>{selectedAsset.description}</p>
-                   <div className="lol-stats" style={{marginTop:'10px'}}>
-                      <span>Precio: <strong style={{color:'#f9d423'}}>CHF {selectedAsset.price}</strong></span>
-                      <span>Fondos: CHF {player.balance}</span>
-                   </div>
-                   <div className="lol-buy-row" style={{marginTop:'20px'}}>
-                     <div className="lol-qty-controls">
-                       <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, (buyQuantities[selectedAsset.id] || 1) - 1)}>-</button>
-                       <span className="lol-qty-val">{buyQuantities[selectedAsset.id] || 1}</span>
-                       <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, (buyQuantities[selectedAsset.id] || 1) + 1)}>+</button>
-                     </div>
-                     <button 
-                       className="lol-lock-btn wildcard-btn"
-                       disabled={(buyQuantities[selectedAsset.id] || 1) * selectedAsset.price > player.balance}
-                       onClick={() => handleBuy(selectedAsset, buyQuantities[selectedAsset.id] || 1)}
-                     >
-                       COMPRAR {selectedAsset.ticker}
-                     </button>
-                   </div>
-                </div>
-             )}
-          </div>
-          <div className="lol-bottom-deck">
-             <div className="lol-deck-title">TU MAZO FINAL:</div>
-             <div className="lol-deck-slots">
-                {player.portfolio.map((item, i) => (
-                  <div key={`${item.asset.id}-${i}`} className={`lol-deck-slot filled ${item.asset.type==='crypto'?'crypto':''}`}>
-                    <span className="deck-icon">{item.asset.icon}</span>
-                    <span className="deck-qty">x{item.quantity}</span>
-                  </div>
-                ))}
-             </div>
-             <div className="lol-deck-actions">
-               <button className="lol-back-btn" onClick={() => { setPhase('market'); setSelectedAsset(null); }}>
-                 ← Volver
-               </button>
-               <button className="lol-confirm-btn final" onClick={() => { setPhase('countdown'); setCountdown(5); }}>
-                 ¡ENFRENTAR LA OLA!
-               </button>
-             </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Context + Market: horizontal layout (left=context, right=market)
   const cityBuildings = player.portfolio.map((item) => ({

@@ -34,6 +34,7 @@ export interface PortfolioItem {
   quantity: number;
   purchasePrice: number;
   holdWaves: number;
+  groupId?: string;
 }
 
 export interface HistoricalEvent {
