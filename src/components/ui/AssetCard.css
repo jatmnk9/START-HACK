@@ -1,0 +1,150 @@
+/* Compact card (Arena, small grids) */
+.asset-card-compact {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ac-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ac-icon { font-size: 1.3rem; }
+.ac-info { display: flex; flex-direction: column; gap: 1px; flex: 1; }
+.ac-name { color: #ddd; font-weight: 600; font-size: 0.78rem; }
+.ac-price { color: #f9d423; font-weight: 700; font-size: 0.82rem; }
+
+.ac-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.qty-ctrl button {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.qty-ctrl button:hover { background: rgba(255,255,255,0.18); }
+
+.qty-ctrl span {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  min-width: 16px;
+  text-align: center;
+}
+
+.ac-buy {
+  padding: 3px 8px;
+  background: rgba(76,175,80,0.2);
+  border: 1px solid rgba(76,175,80,0.4);
+  border-radius: 6px;
+  color: #4caf50;
+  font-weight: 700;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ac-buy:hover:not(:disabled) { background: rgba(76,175,80,0.35); }
+.ac-buy:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* Full card (Survival market) */
+.asset-card-full {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.asset-card-full:hover {
+  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+}
+
+.asset-card-full.type-stock { border-left: 3px solid #4caf50; }
+.asset-card-full.type-etf { border-left: 3px solid #2196f3; }
+.asset-card-full.type-bond { border-left: 3px solid #9e9e9e; }
+.asset-card-full.type-crypto { border-left: 3px solid #ff9800; }
+.asset-card-full.type-commodity { border-left: 3px solid #f9d423; }
+
+.ac-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ac-icon-lg { font-size: 1.5rem; }
+.ac-meta { display: flex; flex-direction: column; flex: 1; }
+.ac-name-lg { color: #fff; font-weight: 700; font-size: 0.85rem; }
+.ac-ticker { color: #888; font-size: 0.7rem; }
+.ac-price-lg { color: #f9d423; font-weight: 800; font-size: 0.95rem; }
+
+.ac-desc { color: #888; font-size: 0.72rem; line-height: 1.4; }
+
+.ac-badges {
+  display: flex;
+  gap: 6px;
+}
+.ac-type-badge, .ac-sector-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+.ac-type-badge {
+  background: rgba(255,255,255,0.08);
+  color: #aaa;
+}
+.ac-sector-badge {
+  background: rgba(100,181,246,0.1);
+  color: #64b5f6;
+}
+
+.ac-actions-full {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.ac-buy-full {
+  flex: 1;
+  padding: 5px 10px;
+  background: linear-gradient(135deg, rgba(76,175,80,0.25), rgba(76,175,80,0.15));
+  border: 1px solid rgba(76,175,80,0.4);
+  border-radius: 8px;
+  color: #4caf50;
+  font-weight: 700;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ac-buy-full:hover:not(.disabled) {
+  background: linear-gradient(135deg, rgba(76,175,80,0.4), rgba(76,175,80,0.25));
+}
+.ac-buy-full.disabled { opacity: 0.3; cursor: not-allowed; }

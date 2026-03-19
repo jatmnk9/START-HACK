@@ -1,0 +1,55 @@
+.shop-bg {
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+}
+
+.sh-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0;
+}
+
+.sh-xp-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.6rem;
+  background: rgba(0,0,0,0.2);
+  border-radius: 10px;
+}
+.sh-xp-label { color: #888; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; }
+.sh-xp-val { color: #64b5f6; font-weight: 800; font-size: 1.1rem; }
+
+.sh-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+.sh-deck h3 { color: #fff; font-size: 0.9rem; }
+.sh-empty { color: #666; font-style: italic; font-size: 0.8rem; }
+.sh-deck-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sh-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+
+.sh-title {
+  color: #f9d423;
+  font-size: 1.3rem;
+}
+
+.sh-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+}

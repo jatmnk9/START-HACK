@@ -1,0 +1,101 @@
+/* Mini display */
+.pc-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  color: #ddd;
+  font-size: 0.8rem;
+}
+.pc-mini-icon { font-size: 1rem; }
+.pc-mini-name { font-weight: 600; font-size: 0.75rem; }
+
+/* Full card */
+.pc-card {
+  background: rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.25s;
+}
+.pc-card:hover:not(.owned):not(.used) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.pc-card.offensive { border-color: rgba(255,107,107,0.3); }
+.pc-card.offensive:hover:not(.owned) { border-color: rgba(255,107,107,0.5); }
+.pc-card.defensive { border-color: rgba(100,181,246,0.3); }
+.pc-card.defensive:hover:not(.owned) { border-color: rgba(100,181,246,0.5); }
+.pc-card.used { border-color: rgba(76,175,80,0.4); background: rgba(76,175,80,0.06); }
+.pc-card.owned { opacity: 0.6; }
+
+.pc-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pc-icon-lg { font-size: 2rem; }
+
+.pc-type-badge {
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.pc-type-badge.offensive { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+.pc-type-badge.defensive { background: rgba(100,181,246,0.12); color: #64b5f6; }
+
+.pc-name-lg { color: #fff; font-weight: 700; font-size: 1rem; }
+.pc-desc-lg { color: #888; font-size: 0.78rem; line-height: 1.4; }
+
+.pc-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+}
+
+.pc-cost { color: #64b5f6; font-weight: 700; font-size: 0.85rem; }
+
+.pc-use-btn {
+  padding: 5px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(249,212,35,0.4);
+  background: rgba(249,212,35,0.1);
+  color: #f9d423;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.pc-use-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pc-buy-btn {
+  padding: 6px 16px;
+  background: linear-gradient(135deg, #f9d423, #f5a623);
+  border: none;
+  border-radius: 8px;
+  color: #1a1a2e;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pc-buy-btn:hover:not(:disabled) { transform: scale(1.05); }
+.pc-buy-btn:disabled {
+  background: rgba(255,255,255,0.1);
+  color: #666;
+  cursor: not-allowed;
+}
+
+.pc-owned-tag {
+  color: #4caf50;
+  font-weight: 600;
+  font-size: 0.78rem;
+}

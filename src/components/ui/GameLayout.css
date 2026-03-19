@@ -1,0 +1,62 @@
+.game-layout {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Weather backgrounds */
+.game-layout.weather-storm {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+}
+.game-layout.weather-rain {
+  background: linear-gradient(135deg, #1a1a2e 0%, #1b2838 50%, #2c3e50 100%);
+}
+.game-layout.weather-cloudy {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 50%, #3d3d5c 100%);
+}
+.game-layout.weather-sunny {
+  background: linear-gradient(135deg, #1a1a2e 0%, #2e1a47 40%, #44234c 100%);
+}
+.game-layout.weather-thunder {
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a0a2e 40%, #2d1b4e 100%);
+}
+
+.panel {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+.panel::-webkit-scrollbar { width: 5px; }
+.panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
+.left-panel {
+  flex: 0 0 340px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 0.75rem;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  gap: 0.75rem;
+}
+
+.center-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  gap: 1rem;
+}

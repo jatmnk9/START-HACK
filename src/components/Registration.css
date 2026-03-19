@@ -1,0 +1,179 @@
+.reg-bg {
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+}
+
+/* Form Phase */
+.reg-container {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 2.5rem 3rem;
+  max-width: 700px;
+  width: 100%;
+  backdrop-filter: blur(20px);
+}
+
+.reg-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.game-title {
+  font-size: 2.2rem;
+  background: linear-gradient(135deg, #f9d423, #f5a623);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+}
+
+.title-icon { -webkit-text-fill-color: initial; }
+
+.subtitle {
+  color: #888;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+.reg-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.reg-form-row {
+  display: flex;
+  gap: 2rem;
+  width: 100%;
+  align-items: flex-start;
+}
+
+.form-group {
+  flex: 1;
+}
+
+.form-group label {
+  display: block;
+  color: #ddd;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-field:focus { border-color: #f9d423; }
+
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.avatar-btn {
+  width: 44px;
+  height: 44px;
+  font-size: 1.4rem;
+  border-radius: 10px;
+  border: 2px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-btn:hover { border-color: rgba(249,212,35,0.4); transform: scale(1.08); }
+.avatar-btn.selected {
+  border-color: #f9d423;
+  background: rgba(249,212,35,0.15);
+  box-shadow: 0 0 16px rgba(249,212,35,0.3);
+}
+
+/* Chest Phase */
+.chest-container {
+  text-align: center;
+}
+.chest-emoji { font-size: 5rem; }
+.chest-container.falling {
+  animation: chestFall 1.5s ease-in;
+}
+.chest-container.open .chest-emoji {
+  animation: chestPop 0.5s ease;
+}
+
+@keyframes chestFall {
+  0% { transform: translateY(-200px) rotate(-10deg); opacity: 0; }
+  100% { transform: translateY(0) rotate(0); opacity: 1; }
+}
+@keyframes chestPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+
+.chest-reveal {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  animation: fadeInUp 0.5s ease;
+}
+.coins-burst { font-size: 3rem; }
+.chest-amount {
+  font-size: 2.5rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #f9d423, #f5a623);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Welcome Phase */
+.welcome-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 2.5rem 3rem;
+  text-align: center;
+  max-width: 520px;
+  backdrop-filter: blur(20px);
+}
+.welcome-avatar { font-size: 4rem; margin-bottom: 1rem; }
+.welcome-card h1 { color: #fff; font-size: 1.6rem; margin-bottom: 0.8rem; }
+.welcome-message { color: #b0b0d0; line-height: 1.6; font-size: 0.95rem; }
+.highlight { color: #f9d423; font-weight: 700; }
+
+.initial-balance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(249,212,35,0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(249,212,35,0.2);
+}
+.balance-icon { font-size: 2rem; }
+.balance-amount {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #f9d423;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
