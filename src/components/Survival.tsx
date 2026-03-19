@@ -5,7 +5,6 @@ import { ASSETS } from '../data/assets';
 import type { Asset, HistoricalEvent } from '../types';
 import GameLayout, { LeftPanel, RightPanel, CenterPanel } from './ui/GameLayout';
 import TopBar from './ui/TopBar';
-import AssetCard from './ui/AssetCard';
 import CityView from './ui/CityView';
 import NewsTicker from './ui/NewsTicker';
 import ContextPanel from './survival/ContextPanel';
@@ -18,7 +17,10 @@ export default function Survival() {
   const { state, dispatch } = useGame();
   const player = state.player!;
 
-  const [phase, setPhase] = useState<'roulette' | 'context' | 'market' | 'countdown' | 'impact' | 'result'>('roulette');
+  const [phase, setPhase] = useState<'roulette' | 'context' | 'market' | 'crypto_wildcard' | 'countdown' | 'impact' | 'result'>('roulette');
+  
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [investmentMode, setInvestmentMode] = useState<'ataque' | 'defensa' | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<HistoricalEvent>(HISTORICAL_EVENTS[0]);
   const [countdown, setCountdown] = useState(5);
   const [impactResults, setImpactResults] = useState<{ assetId: string; name: string; change: number; emoji: string }[]>([]);
@@ -76,10 +78,6 @@ export default function Survival() {
   const handleBuy = (asset: Asset, qty: number) => {
     if (qty * asset.price > player.balance) return;
     dispatch({ type: 'BUY_ASSET', asset, quantity: qty });
-  };
-
-  const handleSell = (assetId: string) => {
-    dispatch({ type: 'SELL_ASSET', assetId, quantity: 1 });
   };
 
   const updateQuantity = (assetId: string, qty: number) => {
@@ -173,6 +171,223 @@ export default function Survival() {
     );
   }
 
+  // LOL-Style Champion Select (Full Screen)
+  if (phase === 'market') {
+    const renderChampSelect = () => {
+      if (!investmentMode) {
+        return (
+          <div className="lol-mode-select">
+            <h1 className="lol-title">ELIGE TU MODO DE INVERSIÓN</h1>
+            <div className="lol-modes">
+              <div className="lol-mode-card ataque" onClick={() => setInvestmentMode('ataque')}>
+                <div className="lol-mode-icon">⚔️</div>
+                <h2>Ataque</h2>
+                <p>Acciones / Materias Primas</p>
+                <span>Aumenta el daño</span>
+              </div>
+              <div className="lol-mode-card defensa" onClick={() => setInvestmentMode('defensa')}>
+                <div className="lol-mode-icon">🛡️</div>
+                <h2>Defensa</h2>
+                <p>ETF / Bonos</p>
+                <span>Maximiza duración</span>
+              </div>
+            </div>
+            <button className="lol-back-context-btn" onClick={() => setPhase('context')}>← Volver al Contexto</button>
+          </div>
+        );
+      }
+
+      // 3 companies based on mode
+      const availableAssets = ASSETS.filter(a => {
+        if (a.type === 'crypto') return false;
+        if (investmentMode === 'ataque') return a.type === 'stock' || a.type === 'commodity';
+        return a.type === 'etf' || a.type === 'bond';
+      }).slice(0, 3); // "solo pon tres empresas por ahora bien centrada"
+
+      return (
+        <div className="lol-champ-select">
+          <div className="lol-header">
+            <div className="lol-header-left">
+               <button className="lol-back-btn" onClick={() => { setInvestmentMode(null); setSelectedAsset(null); }}>
+                 ← Volver a Modos
+               </button>
+            </div>
+            <h2>DECLARA TU INVERSIÓN: {investmentMode === 'ataque' ? 'ATAQUE' : 'DEFENSA'}</h2>
+            <div className="lol-header-right">
+               <div className="lol-timer">00</div>
+            </div>
+          </div>
+
+          <div className="lol-main-area">
+            {/* Left side: Assets Grid */}
+            <div className="lol-grid-container">
+              <div className="lol-grid">
+                {availableAssets.map(asset => (
+                  <div 
+                    key={asset.id} 
+                    className={`lol-champ-portrait ${selectedAsset?.id === asset.id ? 'selected' : ''}`}
+                    onClick={() => setSelectedAsset(asset)}
+                  >
+                    <div className="lol-champ-img">{asset.icon}</div>
+                    <div className="lol-champ-name">{asset.name}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right side / Center: Selected Asset Detail */}
+            {selectedAsset ? (
+              <div className="lol-detail-container">
+                 <div className="lol-detail-left">
+                   <div className="lol-splash-icon">{selectedAsset.icon}</div>
+                   <h1 className="lol-splash-name">{selectedAsset.name}</h1>
+                   <p className="lol-splash-title">{selectedAsset.ticker} - {selectedAsset.sector}</p>
+                 </div>
+                 <div className="lol-detail-right">
+                   <p className="lol-desc">{selectedAsset.description}</p>
+                   <div className="lol-stats" style={{justifyContent: 'flex-start', marginBottom: '15px'}}>
+                      <span>Precio: <strong style={{color:'#f9d423'}}>CHF {selectedAsset.price}</strong></span>
+                      <span>Efecto: <strong style={{color: investmentMode==='ataque' ? '#ff4e50' : '#64b5f6'}}>{investmentMode.toUpperCase()}</strong></span>
+                   </div>
+                   
+                   <div className="lol-actions" style={{borderTop: 'none', paddingTop: 0}}>
+                     <div className="lol-buy-row horizontal">
+                       <div className="lol-qty-controls">
+                         <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, (buyQuantities[selectedAsset.id] || 1) - 1)}>-</button>
+                         <span className="lol-qty-val">{buyQuantities[selectedAsset.id] || 1}</span>
+                         <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, (buyQuantities[selectedAsset.id] || 1) + 1)}>+</button>
+                       </div>
+                       <button 
+                         className="lol-lock-btn"
+                         disabled={(buyQuantities[selectedAsset.id] || 1) * selectedAsset.price > player.balance}
+                         onClick={() => handleBuy(selectedAsset, buyQuantities[selectedAsset.id] || 1)}
+                       >
+                         FIJAR INVERSIÓN ({(buyQuantities[selectedAsset.id] || 1) * selectedAsset.price})
+                       </button>
+                     </div>
+                     <span className="lol-balance" style={{marginTop: '10px'}}>Fondos Disponibles: CHF {player.balance}</span>
+                   </div>
+                 </div>
+              </div>
+            ) : (
+              <div className="lol-detail-container empty">
+                <h3>SELECCIONA UNA INVERSIÓN</h3>
+              </div>
+            )}
+          </div>
+
+          <div className="lol-bottom-deck">
+             <div className="lol-deck-title">TU EQUIPO:</div>
+             <div className="lol-deck-slots">
+                {player.portfolio.filter(p => p.asset.type !== 'crypto').map(item => (
+                  <div key={item.asset.id} className="lol-deck-slot filled">
+                    <span className="deck-icon">{item.asset.icon}</span>
+                    <span className="deck-qty">x{item.quantity}</span>
+                  </div>
+                ))}
+                {/* Pad empty slots up to 5 */}
+                {Array.from({ length: Math.max(0, 5 - player.portfolio.filter(p => p.asset.type !== 'crypto').length) }).map((_, i) => (
+                  <div key={`empty-${i}`} className="lol-deck-slot empty"></div>
+                ))}
+             </div>
+             {player.portfolio.length > 0 && (
+               <button className="lol-confirm-btn" onClick={() => setPhase('crypto_wildcard')}>
+                 CONTINUAR FASE
+               </button>
+             )}
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div className="lol-fullscreen-bg">
+        {renderChampSelect()}
+      </div>
+    );
+  }
+
+  // Crypto Wildcard Phase (Full Screen)
+  if (phase === 'crypto_wildcard') {
+    const cryptoAssets = ASSETS.filter(a => a.type === 'crypto');
+    return (
+      <div className="lol-fullscreen-bg crypto-bg">
+        <div className="lol-champ-select wildcard">
+          <div className="lol-header">
+            <div className="lol-header-left"></div>
+            <h2>FASE COMODÍN: CRIPTO</h2>
+            <div className="lol-header-right">
+               <div className="lol-timer" style={{color: '#bc42f5', borderColor: '#bc42f5'}}>??</div>
+            </div>
+          </div>
+          <p className="lol-subtitle">
+            Criptomonedas: Altamente volátiles, sin relación con las empresas. ¿Deseas arriesgarte?
+          </p>
+          <div className="lol-main-area centered-cryptos">
+             <div className="lol-grid horizontal-grid">
+                {cryptoAssets.map(asset => (
+                  <div 
+                    key={asset.id} 
+                    className={`lol-champ-portrait wildcard ${selectedAsset?.id === asset.id ? 'selected' : ''}`}
+                    onClick={() => setSelectedAsset(asset)}
+                  >
+                    <div className="lol-champ-img">{asset.icon}</div>
+                    <div className="lol-champ-name">{asset.name}</div>
+                  </div>
+                ))}
+             </div>
+             {selectedAsset && selectedAsset.type === 'crypto' && (
+                <div className="lol-crypto-buy">
+                   <div className="lol-crypto-splash">
+                     <span className="lol-splash-icon">{selectedAsset.icon}</span>
+                     <h2>{selectedAsset.name}</h2>
+                   </div>
+                   <p>{selectedAsset.description}</p>
+                   <div className="lol-stats" style={{marginTop:'10px'}}>
+                      <span>Precio: <strong style={{color:'#f9d423'}}>CHF {selectedAsset.price}</strong></span>
+                      <span>Fondos: CHF {player.balance}</span>
+                   </div>
+                   <div className="lol-buy-row" style={{marginTop:'20px'}}>
+                     <div className="lol-qty-controls">
+                       <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, (buyQuantities[selectedAsset.id] || 1) - 1)}>-</button>
+                       <span className="lol-qty-val">{buyQuantities[selectedAsset.id] || 1}</span>
+                       <button className="lol-qty-btn" onClick={() => updateQuantity(selectedAsset.id, (buyQuantities[selectedAsset.id] || 1) + 1)}>+</button>
+                     </div>
+                     <button 
+                       className="lol-lock-btn wildcard-btn"
+                       disabled={(buyQuantities[selectedAsset.id] || 1) * selectedAsset.price > player.balance}
+                       onClick={() => handleBuy(selectedAsset, buyQuantities[selectedAsset.id] || 1)}
+                     >
+                       COMPRAR {selectedAsset.ticker}
+                     </button>
+                   </div>
+                </div>
+             )}
+          </div>
+          <div className="lol-bottom-deck">
+             <div className="lol-deck-title">TU MAZO FINAL:</div>
+             <div className="lol-deck-slots">
+                {player.portfolio.map((item, i) => (
+                  <div key={`${item.asset.id}-${i}`} className={`lol-deck-slot filled ${item.asset.type==='crypto'?'crypto':''}`}>
+                    <span className="deck-icon">{item.asset.icon}</span>
+                    <span className="deck-qty">x{item.quantity}</span>
+                  </div>
+                ))}
+             </div>
+             <div className="lol-deck-actions">
+               <button className="lol-back-btn" onClick={() => { setPhase('market'); setSelectedAsset(null); }}>
+                 ← Volver
+               </button>
+               <button className="lol-confirm-btn final" onClick={() => { setPhase('countdown'); setCountdown(5); }}>
+                 ¡ENFRENTAR LA OLA!
+               </button>
+             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Context + Market: horizontal layout (left=context, right=market)
   const cityBuildings = player.portfolio.map((item) => ({
     id: item.asset.id,
@@ -190,7 +405,7 @@ export default function Survival() {
       <LeftPanel className="sv-left">
         <TopBar title="🌊 Supervivencia" showBack backTo="hub" />
         <ContextPanel event={selectedEvent} />
-        <CityView buildings={cityBuildings} onSell={phase === 'market' ? handleSell : undefined} />
+        <CityView buildings={cityBuildings} onSell={undefined} />
         <div className="sv-balance-block">
           <span className="sv-bal-label">Balance</span>
           <span className="sv-bal-val">💰 CHF {player.balance.toLocaleString()}</span>
@@ -210,36 +425,6 @@ export default function Survival() {
           </div>
         )}
 
-        {phase === 'market' && (
-          <div className="sv-market">
-            <div className="sv-market-header">
-              <h2>🏪 Mercado</h2>
-              <span className="sv-market-bal">💰 CHF {player.balance.toLocaleString()}</span>
-            </div>
-            <div className="sv-asset-grid">
-              {ASSETS.map((asset) => (
-                <AssetCard
-                  key={asset.id}
-                  asset={asset}
-                  quantity={buyQuantities[asset.id] || 1}
-                  onBuy={handleBuy}
-                  onQuantityChange={updateQuantity}
-                  canAfford={(buyQuantities[asset.id] || 1) * asset.price <= player.balance}
-                />
-              ))}
-            </div>
-            <div className="sv-market-actions">
-              {player.portfolio.length > 0 && (
-                <button className="btn-primary" onClick={() => { setPhase('countdown'); setCountdown(5); }}>
-                  ⚡ Confirmar — Enfrentar la Ola
-                </button>
-              )}
-              <button className="btn-secondary" onClick={() => setPhase('context')}>
-                ← Volver al Contexto
-              </button>
-            </div>
-          </div>
-        )}
       </RightPanel>
     </GameLayout>
   );
