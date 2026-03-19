@@ -1,117 +1,125 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../context/GameContext';
 import { ONBOARDING_MODULES } from '../data/onboarding';
-import GameLayout, { LeftPanel, RightPanel } from './ui/GameLayout';
+import GameLayout, { LeftPanel } from './ui/GameLayout';
 import './Onboarding.css';
 
 export default function Onboarding() {
-  const { dispatch } = useGame();
-  const [currentModule, setCurrentModule] = useState(0);
-  const [phase, setPhase] = useState<'theory' | 'quiz' | 'feedback'>('theory');
-  const [, setSelectedAnswer] = useState<number | null>(null);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [shake, setShake] = useState(false);
+  const { state, dispatch } = useGame();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  const mod = ONBOARDING_MODULES[currentModule];
+  const completedLevels = state.player?.completedWaves || 0;
 
-  const handleAnswer = (idx: number) => {
-    setSelectedAnswer(idx);
-    const correct = idx === mod.correctAnswer;
-    setIsCorrect(correct);
-    if (!correct) {
-      setShake(true);
-      setTimeout(() => setShake(false), 500);
+  useEffect(() => {
+    if (!state.player) {
+      dispatch({
+        type: 'CREATE_PLAYER',
+        username: 'Camila',
+        avatar: '👩‍💻'
+      });
     }
-    setPhase('feedback');
+  }, [state.player, dispatch]);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY, currentTarget } = e;
+    const { width, height } = currentTarget.getBoundingClientRect();
+    const x = (clientX - width / 2) / 60;
+    const y = (clientY - height / 2) / 60;
+    setMousePos({ x, y });
   };
 
-  const handleNext = () => {
-    if (!isCorrect) {
-      setPhase('quiz');
-      setSelectedAnswer(null);
-      return;
-    }
-    if (currentModule < ONBOARDING_MODULES.length - 1) {
-      setCurrentModule((prev) => prev + 1);
-      setPhase('theory');
-      setSelectedAnswer(null);
-    } else {
-      dispatch({ type: 'COMPLETE_ONBOARDING' });
+  const handleLevelClick = (levelIndex: number) => {
+    if (levelIndex <= completedLevels + 1) {
+      if (levelIndex >= 4) {
+        dispatch({ type: 'SET_SCREEN', screen: 'arena' });
+      } else {
+        dispatch({ type: 'SET_SCREEN', screen: 'survival' });
+      }
     }
   };
 
   return (
-    <GameLayout className="onboarding-bg">
-      {/* Left: Progress sidebar */}
-      <LeftPanel width="240px" className="onboarding-sidebar">
-        <div className="ob-sidebar-title">📚 Formación</div>
+    <GameLayout 
+      className="onboarding-bg" 
+      style={{ backgroundPosition: `${50 + mousePos.x}% ${50 + mousePos.y}%` }}
+    >
+      <div className="mouse-tracker" onMouseMove={handleMouseMove} />
+
+      <div className="map-container" style={{ transform: `translate(${mousePos.x * 2}px, ${mousePos.y * 2}px)` }}>
+        {[1, 2, 3, 4].map((level) => {
+          const isUnlocked = level <= completedLevels + 1;
+          const isCompleted = level <= completedLevels;
+          return (
+            <button
+              key={level}
+              className={`map-marker marker-${level} ${!isUnlocked ? 'locked' : ''} ${isCompleted ? 'completed' : ''}`}
+              onClick={() => isUnlocked && handleLevelClick(level - 1)}
+            >
+              <img src="/src/assets/player.png" alt={`Level ${level}`} />
+              {!isUnlocked && <div className="lock-overlay">🔒</div>}
+              <div className="marker-tooltip">
+                <span className="tooltip-title">{ONBOARDING_MODULES[level - 1]?.title}</span>
+                <span className="tooltip-status">
+                  {isCompleted ? 'Completado' : isUnlocked ? 'Disponible' : 'Bloqueado'}
+                </span>
+              </div>
+            </button>
+          );
+        })}
+
+        {completedLevels >= 4 && (
+          <button 
+            className="map-marker marker-arena"
+            onClick={() => handleLevelClick(4)}
+          >
+            <div className="arena-pulse">🏰</div>
+            <div className="marker-tooltip">
+              <span className="tooltip-title">Battle Royale</span>
+              <span className="tooltip-status">¡Nivel Final!</span>
+            </div>
+          </button>
+        )}
+      </div>
+
+      <button 
+        className={`ob-sidebar-toggle ${isSidebarOpen ? 'open' : ''}`}
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
+        <span></span><span></span><span></span>
+      </button>
+
+      <LeftPanel className={`onboarding-sidebar ${isSidebarOpen ? 'show' : ''}`}>
+        <div className="ob-sidebar-title">🏘️ Vida Rural</div>
         <div className="ob-progress-list">
           {ONBOARDING_MODULES.map((m, idx) => (
-            <div
-              key={m.id}
-              className={`ob-step ${idx < currentModule ? 'done' : ''} ${idx === currentModule ? 'active' : ''}`}
+            <div 
+              key={m.id} 
+              className={`ob-step ${idx <= completedLevels ? 'active' : 'locked'}`}
+              onClick={() => handleLevelClick(idx)}
+              style={{ cursor: idx <= completedLevels + 1 ? 'pointer' : 'not-allowed' }}
             >
-              <span className="ob-step-icon">{idx < currentModule ? '✅' : m.icon}</span>
+              <span className="ob-step-icon">
+                {idx < completedLevels ? '✅' : idx === completedLevels ? '🧑‍🌾' : '🔒'}
+              </span>
               <div className="ob-step-info">
-                <span className="ob-step-num">Módulo {m.id}</span>
+                <span className="ob-step-num">Cosecha {m.id}</span>
                 <span className="ob-step-title">{m.title}</span>
               </div>
             </div>
           ))}
         </div>
+        
         <div className="ob-progress-bar">
-          <div className="ob-progress-fill" style={{ width: `${(currentModule / ONBOARDING_MODULES.length) * 100}%` }} />
+          <div 
+            className="ob-progress-fill" 
+            style={{ width: `${(completedLevels / 4) * 100}%` }}
+          />
         </div>
-        <span className="ob-progress-text">{currentModule}/{ONBOARDING_MODULES.length} completados</span>
+        <div className="ob-progress-text">
+          {completedLevels} de 4 niveles completados
+        </div>
       </LeftPanel>
-
-      {/* Right: Content */}
-      <RightPanel className="onboarding-content">
-        <div className={`ob-card ${shake ? 'shake' : ''}`}>
-          <div className="ob-card-header">
-            <span className="ob-mod-icon">{mod.icon}</span>
-            <h2>Módulo {mod.id}: {mod.title}</h2>
-          </div>
-
-          {phase === 'theory' && (
-            <div className="ob-theory">
-              <div className="ob-theory-text" dangerouslySetInnerHTML={{ __html: mod.theory }} />
-              <button className="btn-primary" onClick={() => setPhase('quiz')}>
-                ¡Entendido! Ir al Quiz →
-              </button>
-            </div>
-          )}
-
-          {phase === 'quiz' && (
-            <div className="ob-quiz">
-              <h3 className="ob-question">{mod.question}</h3>
-              <div className="ob-options">
-                {mod.options.map((opt, idx) => (
-                  <button key={idx} className="ob-option" onClick={() => handleAnswer(idx)}>
-                    <span className="ob-letter">{String.fromCharCode(65 + idx)}</span>
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {phase === 'feedback' && (
-            <div className={`ob-feedback ${isCorrect ? 'correct' : 'wrong'}`}>
-              <div className="ob-feedback-icon">{isCorrect ? '🎉' : '😅'}</div>
-              <h3>{isCorrect ? '¡Correcto!' : '¡Casi!'}</h3>
-              <p>{isCorrect ? mod.explanation : mod.wrongExplanation}</p>
-              <button className="btn-primary" onClick={handleNext}>
-                {isCorrect
-                  ? currentModule < ONBOARDING_MODULES.length - 1
-                    ? 'Siguiente Módulo →'
-                    : '¡Empezar a Invertir! 🚀'
-                  : 'Intentar de Nuevo ↩'}
-              </button>
-            </div>
-          )}
-        </div>
-      </RightPanel>
     </GameLayout>
   );
 }

@@ -88,7 +88,7 @@ export default function Survival() {
 
   const portfolioValue = player.portfolio.reduce((sum, item) => sum + item.asset.price * item.quantity, 0);
 
-  const handleBackToHub = () => dispatch({ type: 'SET_SCREEN', screen: 'hub' });
+  const handleBackToHub = () => dispatch({ type: 'SET_SCREEN', screen: 'onboarding' });
   const handlePlayAgain = () => {
     setPhase('roulette');
     setCountdown(5);
