@@ -1,0 +1,80 @@
+{
+  "_meta": {
+    "_description": "Tower Defense Generators (The 'Sunflowers'). These are placed on the left column to generate CHF over time.",
+    "_mechanics": "Each generator drops CHF every 'tickSeconds'. 'volatilityRisk' is the % chance they fail to generate a drop on a tick (simulating a bad market day for that asset)."
+  },
+  "investments": [
+    {
+      "id": "swiss_bond_10y",
+      "name": "Swiss Gov Bond 10Y",
+      "category": "bonds",
+      "icon": "🛡️",
+      "costToPlace": 50,
+      "chfPerTick": 10,
+      "tickSeconds": 4,
+      "volatilityRisk": 0.05,
+      "description": "Slow but extremely reliable. Rarely misses a payout.",
+      "historicalBasis": "Bonds CSV: Swiss bonds stayed positive during 2008 and 2020 crashes."
+    },
+    {
+      "id": "gold_usd",
+      "name": "Gold",
+      "category": "commodities",
+      "icon": "🥇",
+      "costToPlace": 75,
+      "chfPerTick": 15,
+      "tickSeconds": 5,
+      "volatilityRisk": 0.10,
+      "description": "Steady asset, good defense against inflation.",
+      "historicalBasis": "Gold CSV: Steady growth, safe haven during most crises."
+    },
+    {
+      "id": "stock_nestle",
+      "name": "Nestlé",
+      "category": "stocks_ch_defensive",
+      "icon": "🍫",
+      "costToPlace": 100,
+      "chfPerTick": 20,
+      "tickSeconds": 4,
+      "volatilityRisk": 0.15,
+      "description": "Solid dividend payer. Moderate generation, very stable.",
+      "historicalBasis": "Equities CSV: Defensive stock that fell much less than the SMI index in 2008."
+    },
+    {
+      "id": "etf_sp500",
+      "name": "S&P 500 ETF",
+      "category": "etf",
+      "icon": "📈",
+      "costToPlace": 150,
+      "chfPerTick": 30,
+      "tickSeconds": 4,
+      "volatilityRisk": 0.25,
+      "description": "The golden standard of growth. Strong yields but can fail on bad days.",
+      "historicalBasis": "Equities CSV (DJIA proxy): Solid long term, but dropped 35% in COVID crash."
+    },
+    {
+      "id": "stock_nvidia",
+      "name": "NVIDIA",
+      "category": "stocks_us_tech",
+      "icon": "💻",
+      "costToPlace": 200,
+      "chfPerTick": 50,
+      "tickSeconds": 3,
+      "volatilityRisk": 0.40,
+      "description": "Huge CHF generation, but high risk of failing a tick.",
+      "historicalBasis": "Tech boom 2023. Extremely volatile but massive upside."
+    },
+    {
+      "id": "crypto_bitcoin",
+      "name": "Bitcoin",
+      "category": "crypto",
+      "icon": "₿",
+      "costToPlace": 250,
+      "chfPerTick": 80,
+      "tickSeconds": 3,
+      "volatilityRisk": 0.60,
+      "description": "Massive payouts, but fails more than half the time. High risk/reward.",
+      "historicalBasis": "Extremely volatile asset class."
+    }
+  ]
+}

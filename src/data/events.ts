@@ -42,6 +42,11 @@ export const HISTORICAL_EVENTS: HistoricalEvent[] = [
       'Zoom y Microsoft Teams baten records de usuarios',
     ],
     weather: 'storm',
+    tdEnemies: [
+      { id: 'confinamiento', name: 'Lockdown' },
+      { id: 'cuello_botella', name: 'Cuello de Botella' },
+      { id: 'venta_panico', name: 'Venta de Pánico' }
+    ],
   },
   {
     id: 'financial_crisis_2008',
@@ -84,6 +89,11 @@ export const HISTORICAL_EVENTS: HistoricalEvent[] = [
       'El oro se convierte en el único refugio seguro',
     ],
     weather: 'thunder',
+    tdEnemies: [
+      { id: 'hipoteca_subprime', name: 'Hipoteca Subprime' },
+      { id: 'panico_bancario', name: 'Pánico Bancario' },
+      { id: 'quiebra_lehman', name: 'Lehman Brothers' }
+    ],
   },
   {
     id: 'dotcom_2000',
@@ -126,6 +136,11 @@ export const HISTORICAL_EVENTS: HistoricalEvent[] = [
       'Las empresas "Old Economy" resurgen',
     ],
     weather: 'rain',
+    tdEnemies: [
+      { id: 'quiebra_punto_com', name: 'Quiebra .Com' },
+      { id: 'panico_tech', name: 'Pánico Tecnológico' },
+      { id: 'burbuja_burst', name: 'Burbuja Estallada' }
+    ],
   },
   {
     id: 'snb_shock_2015',
@@ -168,6 +183,11 @@ export const HISTORICAL_EVENTS: HistoricalEvent[] = [
       'El oro alcanza máximos en francos suizos',
     ],
     weather: 'cloudy',
+    tdEnemies: [
+      { id: 'caida_export', name: 'Caída de Exportaciones' },
+      { id: 'snb_panic', name: 'Pánico del Franco' },
+      { id: 'broker_crash', name: 'Quiebra de Brokers' }
+    ],
   },
   {
     id: 'ukraine_war_2022',
@@ -210,6 +230,11 @@ export const HISTORICAL_EVENTS: HistoricalEvent[] = [
       'El trigo y el petróleo se disparan: inflación récord',
     ],
     weather: 'thunder',
+    tdEnemies: [
+      { id: 'inflacion_7', name: 'Inflación 7%' },
+      { id: 'shock_energetico', name: 'Shock Energético' },
+      { id: 'tasa_hike', name: 'Rate Hike' }
+    ],
   },
   {
     id: 'crypto_winter_2022',
@@ -252,5 +277,10 @@ export const HISTORICAL_EVENTS: HistoricalEvent[] = [
       'Los inversores tradicionales dicen: "Se los advertimos"',
     ],
     weather: 'rain',
+    tdEnemies: [
+      { id: 'fraude_ftx', name: 'Fraude FTX' },
+      { id: 'margin_call', name: 'Margin Call Crypto' },
+      { id: 'terra_luna', name: 'Colapso Terra Luna' }
+    ],
   },
 ];

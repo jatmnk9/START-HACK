@@ -25,6 +25,10 @@ export interface Asset {
   icon: string;
   buildingEmoji: string;
   description: string;
+  chfPerTick?: number;
+  tickSeconds?: number;
+  volatilityRisk?: number;
+  historicalBasis?: string;
 }
 
 export type AssetType = 'stock' | 'etf' | 'bond' | 'crypto' | 'commodity';
@@ -52,11 +56,17 @@ export interface HistoricalEvent {
   usdChfChange: number;
   newsHeadlines: string[];
   weather: 'storm' | 'rain' | 'cloudy' | 'sunny' | 'thunder';
+  tdEnemies?: TDEnemyDef[];
 }
 
 export interface EventImpact {
   assetId: string;
   percentChange: number;
+}
+
+export interface TDEnemyDef {
+  id: string;
+  name: string;
 }
 
 export interface PowerCard {

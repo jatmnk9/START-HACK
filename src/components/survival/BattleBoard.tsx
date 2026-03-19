@@ -8,7 +8,7 @@ interface BattleBoardProps {
   onComplete: () => void;
 }
 
-type TroopType = 'defender' | 'shooter' | 'fighter';
+type TroopType = 'muro_fiduciario' | 'corredor_agresivo' | 'analista_sniper' | 'etf_diversificado' | 'banco_central';
 
 interface TroopDef {
   type: TroopType;
@@ -22,9 +22,11 @@ interface TroopDef {
 }
 
 const TROOP_DEFS: Record<TroopType, TroopDef> = {
-  defender: { type: 'defender', name: 'Muro Fiduciario', icon: '🛡️', cost: 50, hp: 200, damage: 0, range: 0, cooldown: 1000 },
-  fighter: { type: 'fighter', name: 'Corredor Agresivo', icon: '⚔️', cost: 100, hp: 80, damage: 25, range: 0, cooldown: 1000 },
-  shooter: { type: 'shooter', name: 'Analista Sniper', icon: '🏹', cost: 150, hp: 50, damage: 15, range: 100, cooldown: 1500 },
+  muro_fiduciario: { type: 'muro_fiduciario', name: 'Muro Fiduciario', icon: '🛡️', cost: 50, hp: 200, damage: 0, range: 0, cooldown: 1000 },
+  corredor_agresivo: { type: 'corredor_agresivo', name: 'Corredor Agresivo', icon: '⚔️', cost: 100, hp: 30, damage: 40, range: 1, cooldown: 1000 },
+  analista_sniper: { type: 'analista_sniper', name: 'Analista Sniper', icon: '🏹', cost: 150, hp: 15, damage: 120, range: 5, cooldown: 3000 },
+  etf_diversificado: { type: 'etf_diversificado', name: 'Cuerpo de ETFs', icon: '🌐', cost: 250, hp: 40, damage: 25, range: 2, cooldown: 1500 },
+  banco_central: { type: 'banco_central', name: 'Banco Central', icon: '🏦', cost: 500, hp: 100, damage: 500, range: 7, cooldown: 10000 },
 };
 
 export default function BattleBoard({ portfolio, event, onComplete }: BattleBoardProps) {
@@ -68,7 +70,7 @@ export default function BattleBoard({ portfolio, event, onComplete }: BattleBoar
       return [...gens, ...Object.values(grouped)];
     })(),
     troops: [] as { id: string; type: TroopType; col: number; lane: number; hp: number; maxHp: number; lastAttack: number }[],
-    enemies: [] as { id: string; lane: number; col: number; hp: number; maxHp: number; speed: number; lastMove: number; lastAttack: number; damage: number }[],
+    enemies: [] as { id: string; name: string; lane: number; col: number; hp: number; maxHp: number; speed: number; lastMove: number; lastAttack: number; damage: number }[],
     nextEnemySpawnTime: 2000,
   });
 
@@ -129,8 +131,15 @@ export default function BattleBoard({ portfolio, event, onComplete }: BattleBoar
          const hp = 30 + Math.floor(s.timeElapsed / 2);
          // Panic level scaling
          const panicMult = event.panicLevel / 50; 
+         
+         let enemyName = 'Pérdida';
+         if (event.tdEnemies && event.tdEnemies.length > 0) {
+            enemyName = event.tdEnemies[Math.floor(Math.random() * event.tdEnemies.length)].name;
+         }
+
          s.enemies.push({
            id: Math.random().toString(),
+           name: enemyName,
            lane: Math.floor(Math.random() * ROWS),
            col: COLS - 1, // Spawn at rightmost column
            hp: hp * panicMult,
@@ -177,15 +186,10 @@ export default function BattleBoard({ portfolio, event, onComplete }: BattleBoar
          if (currentTime - troop.lastAttack > def.cooldown) {
             // Find target
             let target = null;
-            if (def.range === 0) {
-               // Melee: target must be adjacent (in col + 1)
-               target = s.enemies.find(e => e.lane === troop.lane && e.col === troop.col + 1 && e.hp > 0);
-            } else {
-               // Shooter: find first enemy in lane ahead of troop
-               const enemiesInLane = s.enemies.filter(e => e.lane === troop.lane && e.col >= troop.col && e.hp > 0);
-               if (enemiesInLane.length > 0) {
-                 target = enemiesInLane.reduce((prev, curr) => (prev.col < curr.col ? prev : curr)); // Front-most
-               }
+            // Target: front-most enemy in lane within weapon range
+            const enemiesInLane = s.enemies.filter(e => e.lane === troop.lane && e.col > troop.col && e.col <= troop.col + Math.max(1, def.range) && e.hp > 0);
+            if (enemiesInLane.length > 0) {
+              target = enemiesInLane.reduce((prev, curr) => (prev.col < curr.col ? prev : curr));
             }
 
             if (target) {
@@ -299,26 +303,46 @@ export default function BattleBoard({ portfolio, event, onComplete }: BattleBoar
                 }
                 return null;
               })}
+              {/* Enemies */}
+              {s.enemies.filter(e => e.lane === r && e.col === c).map(enemy => (
+                <div 
+                  key={enemy.id} 
+                  className={`bb-enemy ${enemy.hp <= 0 ? 'dead' : ''}`}
+                  style={{
+                    position: 'absolute',
+                    left: `${(enemy.col / COLS) * 100}%`,
+                    zIndex: 100,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div style={{fontSize: '0.6rem', color: '#ff4e50', background: 'rgba(0,0,0,0.7)', padding: '2px 4px', borderRadius: '4px', whiteSpace: 'nowrap', position: 'absolute', top: '-18px'}}>{enemy.name}</div>
+                  <span className="bb-enemy-icon">📉</span>
+                  <div className="bb-hp-bar"><div className="bb-hp-fill enemy" style={{width: `${Math.max(0, (enemy.hp/enemy.maxHp)*100)}%`}}></div></div>
+                </div>
+              ))}
            </div>
          );
       }
     }
 
-    const enemyElements = s.enemies.map(e => (
-      <div 
-        key={e.id} 
-        className="bb-enemy" 
-        style={{ top: `${(e.lane / ROWS) * 100}%`, left: `${(e.col / COLS) * 100}%`, width: `${100/COLS}%`, height: `${100/ROWS}%`}}
-      >
-        <span className="bb-enemy-emoji">👹</span>
-        <div className="bb-hp-bar"><div className="bb-hp-fill enemy" style={{width: `${(e.hp/e.maxHp)*100}%`}}></div></div>
-      </div>
-    ));
+    // The original enemyElements rendering is now redundant as enemies are rendered per cell
+    // const enemyElements = s.enemies.map(e => (
+    //   <div 
+    //     key={e.id} 
+    //     className="bb-enemy" 
+    //     style={{ top: `${(e.lane / ROWS) * 100}%`, left: `${(e.col / COLS) * 100}%`, width: `${100/COLS}%`, height: `${100/ROWS}%`}}
+    //   >
+    //     <span className="bb-enemy-emoji">👹</span>
+    //     <div className="bb-hp-bar"><div className="bb-hp-fill enemy" style={{width: `${(e.hp/e.maxHp)*100}%`}}></div></div>
+    //   </div>
+    // ));
 
     return (
       <div className="bb-grid">
          {cells}
-         {enemyElements}
+         {/* {enemyElements} -- Removed as enemies are now rendered inside cells */}
       </div>
     );
   };

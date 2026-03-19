@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "_description": "Tower Defense Levels (The 'Zombies' and Scenarios). Each level represents a historical crisis.",
+    "_mechanics": "Enemies spawn on the right side of the grid and move to the left. If they reach the left edge, the player loses a 'Vida'."
+  },
+  "levels": [
+    {
+      "id": "level_1_gfc",
+      "name": "The Great Financial Crisis",
+      "subtitle": "2007 - 2009",
+      "description": "Survive the collapse of the housing market.",
+      "startingChf": 150,
+      "lives": 5,
+      "waves": [
+        {
+          "waveId": 1,
+          "name": "Subprime Tremors",
+          "startDelaySec": 10,
+          "enemies": [
+            { "id": "hipoteca_subprime", "name": "Hipoteca Subprime", "hp": 50, "speed": "normal", "count": 5, "spawnIntervalSec": 4 }
+          ]
+        },
+        {
+          "waveId": 2,
+          "name": "The Liquidity Crunch",
+          "startDelaySec": 40,
+          "enemies": [
+            { "id": "hipoteca_subprime", "name": "Hipoteca Subprime", "hp": 50, "speed": "normal", "count": 8, "spawnIntervalSec": 2 },
+            { "id": "panico_bancario", "name": "Pánico Bancario", "hp": 30, "speed": "fast", "count": 3, "spawnIntervalSec": 5 }
+          ]
+        },
+        {
+          "waveId": 3,
+          "name": "Lehman Brothers",
+          "startDelaySec": 75,
+          "enemies": [
+            { "id": "quiebra_lehman", "name": "Lehman Brothers (BOSS)", "hp": 1500, "speed": "slow", "count": 1, "spawnIntervalSec": 0 },
+            { "id": "panico_bancario", "name": "Pánico Bancario", "hp": 30, "speed": "fast", "count": 10, "spawnIntervalSec": 1.5 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "level_2_covid",
+      "name": "COVID-19 Crash",
+      "subtitle": "Spring 2020",
+      "description": "The fastest market crash in history. Brace for impact.",
+      "startingChf": 200,
+      "lives": 4,
+      "waves": [
+        {
+          "waveId": 1,
+          "name": "Lockdown Fears",
+          "startDelaySec": 5,
+          "enemies": [
+            { "id": "confinamiento", "name": "Lockdown", "hp": 60, "speed": "normal", "count": 10, "spawnIntervalSec": 2 }
+          ]
+        },
+        {
+          "waveId": 2,
+          "name": "Supply Chain Collapse",
+          "startDelaySec": 35,
+          "enemies": [
+            { "id": "cuello_botella", "name": "Cuello de Botella", "hp": 300, "speed": "very_slow", "count": 4, "spawnIntervalSec": 8 },
+            { "id": "venta_panico", "name": "Venta de Pánico", "hp": 20, "speed": "very_fast", "count": 15, "spawnIntervalSec": 1 }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "level_3_inflation",
+      "name": "Inflation & Rate Shock",
+      "subtitle": "2022 - 2023",
+      "description": "Central banks are aggressively raising rates. Everything is falling.",
+      "startingChf": 100,
+      "lives": 3,
+      "waves": [
+        {
+          "waveId": 1,
+          "name": "Transitory?",
+          "startDelaySec": 10,
+          "enemies": [
+            { "id": "inflacion_7", "name": "Inflación 7%", "hp": 80, "speed": "normal", "count": 12, "spawnIntervalSec": 2.5 }
+          ]
+        },
+        {
+          "waveId": 2,
+          "name": "The Fed Awakens",
+          "startDelaySec": 50,
+          "enemies": [
+            { "id": "tasa_75bps", "name": "Rate Hike (BOSS)", "hp": 2000, "speed": "slow", "count": 1, "spawnIntervalSec": 0 },
+            { "id": "shock_energetico", "name": "Shock Energético", "hp": 150, "speed": "normal", "count": 8, "spawnIntervalSec": 3 }
+          ]
+        }
+      ]
+    }
+  ]
+}
